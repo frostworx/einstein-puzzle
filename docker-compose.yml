@@ -1,0 +1,12 @@
+services:
+  einstein:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: einstein:latest
+    container_name: einstein
+    ports:
+      - "31415:80"
+    restart: unless-stopped
+    volumes:
+      - ./:/app/
