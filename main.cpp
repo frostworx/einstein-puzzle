@@ -6,7 +6,9 @@
 #include "unicode.h"
 #include "messages.h"
 #include "sound.h"
-
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 Screen screen;
 Random rndGen;
@@ -67,6 +69,9 @@ static std::wstring getResourcesPath(const std::wstring& path)
 static void loadResources(const std::wstring &selfPath)
 {
     StringList dirs;
+#ifdef __EMSCRIPTEN__
+    dirs.push_back(L"res");
+#else
 #ifdef WIN32
     dirs.push_back(getStorage()->get(L"path", L"") + L"\\res"); 
 #else
@@ -79,6 +84,8 @@ static void loadResources(const std::wstring &selfPath)
 #endif
     dirs.push_back(L"res");
     dirs.push_back(L".");
+#endif
+
     resources = new ResourcesCollection(dirs);
     msg.load();
 }
@@ -100,7 +107,9 @@ static void loadResources(const std::wstring &selfPath)
 int main(int argc, char *argv[])
 {
 #ifndef WIN32
+#ifndef __EMSCRIPTEN__
     ensureDirExists(fromMbcs(getenv("HOME")) + std::wstring(L"/.einstein"));
+#endif
 #endif
     
     try {
@@ -110,6 +119,16 @@ int main(int argc, char *argv[])
 //        checkBetaExpire();
         menu();
         getStorage()->flush();
+
+#ifdef __EMSCRIPTEN__
+        EM_ASM(
+            FS.syncfs(false, function (err) {
+                if (err) console.error("syncfs failed:", err);
+                else console.log("syncfs succeeded");
+            });
+        );
+#endif
+
     } catch (Exception &e) {
         std::cerr << L"ERROR: " << e.getMessage() << std::endl;
     } catch (...) {

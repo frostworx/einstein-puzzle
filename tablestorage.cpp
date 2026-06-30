@@ -24,10 +24,12 @@ TableStorage::~TableStorage()
 
 std::wstring TableStorage::getFileName()
 {
-#ifndef WIN32
-    return std::wstring(fromMbcs(getenv("HOME"))) + L"/.einstein/einsteinrc";
-#else
+#ifdef __EMSCRIPTEN__
+    return L"/savedata/einstein.cfg";
+#elif defined(WIN32)
     return L"einstein.cfg";
+#else
+    return std::wstring(fromMbcs(getenv("HOME"))) + L"/.einstein/einsteinrc";
 #endif
 }
 

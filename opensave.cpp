@@ -139,19 +139,22 @@ class SaveCommand: public Command
 
 static std::wstring getSavesPath()
 {
-#ifndef WIN32
-    std::wstring path(fromMbcs(getenv("HOME")) + 
-            std::wstring(L"/.einstein/save"));
-#else
+#ifdef __EMSCRIPTEN__
+    std::wstring path(L"/savedata/save");
+#elif defined(WIN32)
     std::wstring path(getStorage()->get(L"path", L""));
     if (path.length() > 0)
         path += L"\\";
     path += L"save";
+#else
+    std::wstring path(fromMbcs(getenv("HOME")) + std::wstring(L"/.einstein/save"));
 #endif
+
     ensureDirExists(path);
 
     return path;
 }
+
 
 
 typedef std::list<SavedGame> SavesList;

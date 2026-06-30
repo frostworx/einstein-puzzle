@@ -534,37 +534,40 @@ ResourcesCollection::~ResourcesCollection()
         delete *i;
 }
 
-
 void ResourcesCollection::loadResourceFiles(StringList &directories)
 {
+#ifdef __EMSCRIPTEN__
+    files.push_back(new ResourceFile(L"einstein.res", &buffer));
+#else
 #ifdef _MSC_VER
-	WCHAR			currentDir[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, currentDir);
+    WCHAR           currentDir[MAX_PATH];
+    GetCurrentDirectory(MAX_PATH, currentDir);
 #endif
-	for (StringList::iterator i = directories.begin();
+
+    for (StringList::iterator i = directories.begin();
             i != directories.end(); i++)
     {
         const std::wstring &d = *i;
 #ifdef _MSC_VER
-		WIN32_FIND_DATA FileData;
-		HANDLE          hSearch;
-		if (SetCurrentDirectory(d.c_str())) {
-			hSearch = FindFirstFile(TEXT("*.res"), &FileData);
-			if (hSearch != INVALID_HANDLE_VALUE)
-			{
-				do {
-					files.push_back(new ResourceFile(d + L"\\" + FileData.cFileName, &buffer));
-				} while (FindNextFile(hSearch, &FileData));
-				FindClose(hSearch);
-			}
-			SetCurrentDirectory(currentDir);
-		}
+        WIN32_FIND_DATA FileData;
+        HANDLE          hSearch;
+        if (SetCurrentDirectory(d.c_str())) {
+            hSearch = FindFirstFile(TEXT("*.res"), &FileData);
+            if (hSearch != INVALID_HANDLE_VALUE)
+            {
+                do {
+                    files.push_back(new ResourceFile(d + L"\\" + FileData.cFileName, &buffer));
+                } while (FindNextFile(hSearch, &FileData));
+                FindClose(hSearch);
+            }
+            SetCurrentDirectory(currentDir);
+        }
 #else
         DIR *dir = opendir(toMbcs(d).c_str());
         if (dir) {
             struct dirent *de;
             while ((de = readdir(dir)))
-                if (de->d_name[0] != '.') {
+                if (de->d_name != '.') {
                     std::wstring s(fromMbcs(de->d_name));
                     if ((s.length() > 4) && 
                             (toLowerCase(s.substr(s.length() - 4)) == L".res"))
@@ -574,7 +577,9 @@ void ResourcesCollection::loadResourceFiles(StringList &directories)
         }
 #endif
     }
+#endif // __EMSCRIPTEN__
 }
+
 
 
 void ResourcesCollection::processFiles()
