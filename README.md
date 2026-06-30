@@ -11,8 +11,11 @@ I won't fix anything here, you'r eon your own.
 this is a born dead vibe slop (like almost all of them)
 compile with makey.sh
 
-have fun
+play here:
 
+https://frostworx.github.io/einstein-puzzle/
+
+have fun
 
 OLD:
 
